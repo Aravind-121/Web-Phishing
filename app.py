@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template
 import numpy as np
-import FeatureExtractor
-import pickle
+# import FeatureExtractor
+# import pickle
 
 app = Flask(__name__)
 
@@ -25,25 +25,25 @@ def predict():
     # url = "https://www.linkedin.com/"
 
     # loading the saved model
-    model = getModel()
+    # model = getModel()
 
     # getting the features from the url
-    features = FeatureExtractor.getFeatures(url)
+    # features = FeatureExtractor.getFeatures(url)
 
-    result = model.predict(features)
-    # probability = model.predict_proba(features)
-    result = result.tolist()
-    print(type(result))
-    print(result)
+    # result = model.predict(features)
+    # # probability = model.predict_proba(features)
+    # result = result.tolist()
+    # print(type(result))
+    # print(result)
     # print(probability)
 
-    # result = [1]
+    result = [1]
     message = ""
     if(result[0] == 1):
         message = "Legitimate site"
     else:
         message = "Suspecious site"
-    return render_template("product.html", message = message)
+    return render_template("product.html", message = message, url = url)
 
 def getModel():
     file = open("./model.pkl","rb")
