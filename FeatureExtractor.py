@@ -1,16 +1,17 @@
-import numpy as np
-import pandas as pd
 import ipaddress
-from urllib.parse import urlparse
 import re
-import whois
-import traceback
 import socket
-from googlesearch import search
-import requests
-from bs4 import BeautifulSoup
+import traceback
 import urllib.request
 from datetime import date
+from urllib.parse import urlparse
+
+import numpy as np
+import pandas as pd
+import requests
+import whois
+from bs4 import BeautifulSoup
+from googlesearch import search
 
 url = ""
 
@@ -19,14 +20,19 @@ def getDomainName() -> str:
     try:
         urlparser = urlparse(url)
         domainName = urlparser.netloc
-    except Exception as e:
-        print(e)
+    except:
+        traceback.print_exc()
+        raise Exception("Could not find the Domain Name")
     return domainName
 
 def getSoupObject():
-    responseObj = requests.get(url)
-    soupObj = BeautifulSoup(responseObj.text, 'html.parser')
-    return soupObj
+    try:
+        responseObj = requests.get(url)
+        soupObj = BeautifulSoup(responseObj.text, 'html.parser')
+        return soupObj
+    except:
+        traceback.print_exc()
+        raise Exception("Could not get the beatiful soup response object")
 
 
 def getFeatures(URL: str) -> np.ndarray:
@@ -69,99 +75,137 @@ def getFeatures(URL: str) -> np.ndarray:
 # 1. Using the IP Address
 def isHavingIp() -> int:
     domainName = getDomainName()
-    print("Domain Name: ", domainName)
     try:
         ipaddress.ip_address(domainName)
+        print("1. Success")
         return -1
     except:
+        traceback.print_exc()
+        print("1. Fail")
         return 1
 
 # 2. Long URL to Hide the Suspicious Part
 def isLongURL() -> int:
-    urlLength = len(url)
-    if urlLength < 54:
-        return 1
-    elif 54 <= urlLength <= 75:
+    try:
+        urlLength = len(url)
+        print("2. Success")
+        if urlLength < 54:
+            return 1
+        elif 54 <= urlLength <= 75:
+            return 0
+        return -1
+    except:
+        print("2. Fail")
         return 0
-    return -1
 
 # 3. Using URL Shortening Services
 def isURLShorteningServiceUsed() -> int:
-    commonURLShorteners = [
-        't\\.co', 'bitly\\.com', 'is\\.gd', 'prettylinkpro\\.com', 'cutt\\.us', 'rubyurl\\.com', 'tr\\.im',
-        'v\\.gd', 'snipr\\.com', 'tinyurl', 'cli\\.gs', 'x\\.co', 'filoops\\.info', 'wp\\.me', 'q\\.gs', 't\\.co',
-        'ow\\.ly', 'tiny\\.cc', 'migre\\.me', 'om\\.ly', 'bkite\\.com', 'twit\\.ac', 'db\\.tt', 'kl\\.am',
-        'link\\.zip\\.net', 'x\\.co', 'u\\.bb', 'doiop\\.com', 'shorte\\.st', 'goo\\.gl', 'qr\\.net', 'u\\.to',
-        'loopt\\.us', 'adf\\.ly', 'buzurl\\.com', 'post\\.ly', '1url\\.com', 'goo\\.gl', 'ff\\.im', 'short\\.ie',
-        'to\\.ly', 'bit\\.ly', 'yfrog\\.com', 'yourls\\.org', 'vzturl\\.com', 'lnkd\\.in', 'ity\\.im', 'go2l\\.ink',
-        'fic\\.kr', 'Just\\.as', 'su\\.pr', 'bit\\.ly', 'url4\\.eu', 'qr\\.ae', 'po\\.st', 'scrnch\\.me', 'tr\\.im',
-        'twitthis\\.com', 'tweez\\.me', 'ping\\.fm', 'snipurl\\.com', 'j\\.mp', 'ow\\.ly', 'bit\\.do', 'short\\.to',
-        'BudURL\\.com', 'twurl\\.nl', 'bc\\.vc', 'is\\.gd', 'tinyurl\\.com', 'cur\\.lv'
-    ]
-    commonURLShorteners = "|".join(commonURLShorteners)            
-    isURLShortenerPresent = re.search(commonURLShorteners, url)
-    if(isURLShortenerPresent):
-        return -1
-    return 1
+    try:
+        commonURLShorteners = [
+            't\\.co', 'bitly\\.com', 'is\\.gd', 'prettylinkpro\\.com', 'cutt\\.us', 'rubyurl\\.com', 'tr\\.im',
+            'v\\.gd', 'snipr\\.com', 'tinyurl', 'cli\\.gs', 'x\\.co', 'filoops\\.info', 'wp\\.me', 'q\\.gs', 't\\.co',
+            'ow\\.ly', 'tiny\\.cc', 'migre\\.me', 'om\\.ly', 'bkite\\.com', 'twit\\.ac', 'db\\.tt', 'kl\\.am',
+            'link\\.zip\\.net', 'x\\.co', 'u\\.bb', 'doiop\\.com', 'shorte\\.st', 'goo\\.gl', 'qr\\.net', 'u\\.to',
+            'loopt\\.us', 'adf\\.ly', 'buzurl\\.com', 'post\\.ly', '1url\\.com', 'goo\\.gl', 'ff\\.im', 'short\\.ie',
+            'to\\.ly', 'bit\\.ly', 'yfrog\\.com', 'yourls\\.org', 'vzturl\\.com', 'lnkd\\.in', 'ity\\.im', 'go2l\\.ink',
+            'fic\\.kr', 'Just\\.as', 'su\\.pr', 'bit\\.ly', 'url4\\.eu', 'qr\\.ae', 'po\\.st', 'scrnch\\.me', 'tr\\.im',
+            'twitthis\\.com', 'tweez\\.me', 'ping\\.fm', 'snipurl\\.com', 'j\\.mp', 'ow\\.ly', 'bit\\.do', 'short\\.to',
+            'BudURL\\.com', 'twurl\\.nl', 'bc\\.vc', 'is\\.gd', 'tinyurl\\.com', 'cur\\.lv'
+        ]
+        commonURLShorteners = "|".join(commonURLShorteners)            
+        isURLShortenerPresent = re.search(commonURLShorteners, url)
+        print("3. Success")
+        if(isURLShortenerPresent):
+            return -1
+        return 1
+    except:
+        print("3. Fail")
+        return 0
 
 # 4. URLs having “@” Symbol
 def isAtSymbolPresent() -> int:
-    if ( '@' in url ):
-        return -1
-    return 1
+    try:
+        if ( '@' in url ):
+            print("4. Success")
+            return -1
+        print("4. Success")
+        return 1
+    except:
+        print("4. Fail")
+        return 0
 
 # 5. Redirecting using “//”
 def isRedirectedUsingSlashes() -> int:
-    lastOccurenceOfDoubleSlash = -1
-    if("//" in url):
-        lastOccurenceOfDoubleSlash = url.rindex("//")
-    if(lastOccurenceOfDoubleSlash > 6):
-        return -1
-    return 1
+    try:
+        lastOccurenceOfDoubleSlash = -1
+        if("//" in url):
+            lastOccurenceOfDoubleSlash = url.rindex("//")
+        if(lastOccurenceOfDoubleSlash > 6):
+            print("5. Success")
+            return -1
+        print("5. Success")
+        return 1
+    except:
+        print("5. Fail")
+        return 0
 
 # 6. Adding Prefix or Suffix Separated by (-) to the Domain
 def isHyphenPresent() -> int:
-    if ( '-' in url ):
-        return -1
-    return 1
+    try:
+        if ( '-' in url ):
+            print("6. Success")
+            return -1
+        print("6. Success")
+        return 1
+    except:
+        print("6. Fail")
+        return 0
 
 # 7. Sub Domain and Multi Sub Domains
 def subDomain() -> int:
-    if ( "www." in url ):
-        modifiedUrl = url.replace("www.", "")
-    
-    # Country-Code Top Level Domains
-    ccTLD = pd.read_csv("./country-codes-tlds.csv")
-    ccTLD = ccTLD['tld'].to_list()
-    ccTLD = [code.strip() for code in ccTLD]
-    for code in ccTLD:
-        if code in modifiedUrl:
-            modifiedUrl = modifiedUrl.replace(code, "")
-    
-    dotCount = modifiedUrl.count(".")
-    print(modifiedUrl, dotCount)
+    try:
+        if ( "www." in url ):
+            modifiedUrl = url.replace("www.", "")
+        
+        # Country-Code Top Level Domains
+        ccTLD = pd.read_csv("./country-codes-tlds.csv")
+        ccTLD = ccTLD['tld'].to_list()
+        ccTLD = [code.strip() for code in ccTLD]
+        for code in ccTLD:
+            if code in modifiedUrl:
+                modifiedUrl = modifiedUrl.replace(code, "")
+        
+        dotCount = modifiedUrl.count(".")
 
-    if dotCount <= 1:
-        return 1
-    elif dotCount == 2:
+        if dotCount <= 1:
+            print("7. Success")
+            return 1
+        elif dotCount == 2:
+            print("7. Success")
+            return 0
+        print("7. Success")
+        return -1
+    except:
+        print("7. Fail")
         return 0
-    return -1
 
 # 8. HTTPS (Hyper Text Transfer Protocol with Secure Sockets Layer) 
 def isUsingHTTPS() -> int:
     try:
         scheme = urlparse(url).scheme
         if scheme == 'https':
+            print("8. Success")
             return 1
+        print("8. Success")
         return -1
     except:
+        print("8. Fail")
         return 1
 
 # 9. Domain Registration Length
 def domainRegistrationLength() -> int:
     try:
         whoisResponse = whois.whois(getDomainName())
-        print(whoisResponse)
 
         creationDate = whoisResponse.creation_date
         expirationDate = whoisResponse.expiration_date
@@ -169,64 +213,79 @@ def domainRegistrationLength() -> int:
         try:
             if(creationDate):
                 creationDate = creationDate[0]
-                print("aa "+creationDate);
         except:
             traceback.print_exc()
 
         try:
             if(expirationDate):
                 expirationDate = expirationDate[0]
-                print(expirationDate);
         except:
             traceback.print_exc()
 
-        ageOfDomainInMonths = ((expirationDate.year - creationDate.strftime("%d/%m/%y").year) * 12) + (expirationDate.month - creationDate.strftime("%d/%m/%y").month)
+        print(creationDate.year, creationDate.month)
+        ageOfDomainInMonths = ((expirationDate.year - creationDate.year) * 12) + (expirationDate.month - creationDate.month)
 
         if ageOfDomainInMonths >= 12:
+            print("9. Success")
             return 1
+        print("9. Success")
         return -1
     except:
         traceback.print_exc()
+        print("9. Fail")
         return -1
 
 # 10. Using Non-Standard Port
 def isUsingNonStdPort() -> int:
-    preferredStatusOpenPorts = [80, 443]
-    preferredStatusClosePorts = [21, 22, 23, 445, 1433, 1521, 3306, 3389]
+    try:
+        preferredStatusOpenPorts = [80, 443]
+        preferredStatusClosePorts = [21, 22, 23, 445, 1433, 1521, 3306, 3389]
 
-    openPortsNumber, closedPortsNumber = [], []
-    
-    domain = getDomainName()
-    print(domain.split(":"))
-    
-    for portNumber in preferredStatusOpenPorts + preferredStatusClosePorts:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        socket.setdefaulttimeout(1)
-        result = sock.connect_ex((domain, portNumber))
-        if(result == 0):
-            openPortsNumber.append(portNumber)
-        else:
-            closedPortsNumber.append(portNumber)
-        sock.close
+        openPortsNumber, closedPortsNumber = [], []
+        
+        domain = getDomainName()
+        
+        for portNumber in preferredStatusOpenPorts + preferredStatusClosePorts:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            socket.setdefaulttimeout(1)
+            result = sock.connect_ex((domain, portNumber))
+            if(result == 0):
+                openPortsNumber.append(portNumber)
+            else:
+                closedPortsNumber.append(portNumber)
+            sock.close
 
-    for portNumber in openPortsNumber:
-        if portNumber in preferredStatusClosePorts:
-            return -1
-
-    return 1
+        for portNumber in openPortsNumber:
+            if portNumber in preferredStatusClosePorts:
+                print("10. Success")
+                return -1
+        print("10. Success")
+        return 1
+    except:
+        print("10. Fail")
+        return 0
 
 # 11. The Existence of “HTTPS” Token in the Domain Part of the URL
 def isHTTPSInDomainPart() -> int:
-    domain = getDomainName()
-    if( ("https" in domain) and ("http" in domain) ):
-        return -1
-    return 1
+    try:
+        domain = getDomainName()
+        if( ("https" in domain) and ("http" in domain) ):
+            print("11. Success")
+            return -1
+        print("11. Success")
+        return 1
+    except:
+        print("11. Fail")
+        return 0
 
 # 12. Request URL
 def requestURL() -> int:
-    soupObj = getSoupObject()
-    domainName = getDomainName()
     try:
+        soupObj = getSoupObject()
+        domainName = getDomainName()
+
+        i, success = 0, 0
+
         for img in soupObj.find_all('img', src=True):
             dots = [x.start(0) for x in re.finditer('\.', img['src'])]
             if url in img['src'] or domainName in img['src'] or len(dots) == 1:
@@ -253,16 +312,23 @@ def requestURL() -> int:
 
         try:
             percentage = success/float(i) * 100
-            if percentage < 22.0:
+            if( percentage < 22.0 ):
+                print("12. Success")
                 return 1
-            elif((percentage >= 22.0) and (percentage < 61.0)):
+            elif( (percentage >= 22.0) and (percentage < 61.0) ):
+                print("12. Success")
                 return 0
             else:
+                print("12. Success")
                 return -1
         except:
+            print("12. Success")
             return 0
     except:
-        return -1   
+        traceback.print_exc()
+        print("12. Fail")
+        # return -1  
+        return 0 
 
 # 13. URL of Anchor
 def URLOfAnchor() -> int:  
@@ -277,24 +343,30 @@ def URLOfAnchor() -> int:
             #TODO always percentage is 100. Have to check
             percentage = unsafe / float(i) * 100
             if percentage < 31.0:
+                print("13. Success")
                 return 1
             elif ((percentage >= 31.0) and (percentage < 67.0)):
+                print("13. Success")
                 return 0
             else:
+                print("13. Success")
                 return -1
         except:
             traceback.print_exc()
             return -1
     except:
         traceback.print_exc()
-        return -1
+        # return -1
+        print("13. Fail")
+        return 0
 
 # 14. Links in <Meta>, <Script> and <Link> tags
 def linksInMetaScriptLinkTag():
-    soupObj = getSoupObject()
-    domainName = getDomainName()
     try:
-        i,success = 0,0
+        soupObj = getSoupObject()
+        domainName = getDomainName()
+
+        i, success = 0, 0
         
         for link in soupObj.find_all('link', href=True):
             dots = [x.start(0) for x in re.finditer('\.', link['href'])]
@@ -311,95 +383,127 @@ def linksInMetaScriptLinkTag():
         try:
             percentage = success / float(i) * 100
             if percentage < 17.0:
+                print("14. Success")
                 return 1
             elif((percentage >= 17.0) and (percentage < 81.0)):
+                print("14. Success")
                 return 0
             else:
+                print("14. Success")
                 return -1
         except:
+            print("14. Success")
             return 0
     except:
         traceback.print_exc()
-        return -1
+        # return -1
+        print("14. Fail")
+        return 0
 
 # 15. Server Form Handler (SFH)
 def serverFormHandler():
-    soupObj = getSoupObject()
-    domainName = getDomainName()
     try:
+        soupObj = getSoupObject()
+        domainName = getDomainName()
+
         if len(soupObj.find_all('form', action = True)) == 0:
+            print("15. Success")
             return 1
         else :
             for form in soupObj.find_all('form', action = True):
                     if (form['action'] == "") or (form['action'] == "about:blank"):
+                        print("15. Success")
                         return -1
                     elif (url not in form['action']) and (domainName not in form['action']):
+                        print("15. Success")
                         return 0
                     else:
+                        print("15. Success")
                         return 1
     except:
         traceback.print_exc()
-        return -1
+        # return -1
+        print("15. Fail")
+        return 0
 
 # 16. Submitting Information to Email
 def submittingInfoToEmail():
     #TODO wrong
     try:
-        # if ( re.findall(r"mail\(\)|mailto:?", str(getSoupObject())) ): # new pattern.. seems correct.. have to check
         #TODO pattern thappu
-        if ( re.findall(r"[mail\(\)|mailto:?]", str(getSoupObject())) ):
+        if ( re.findall(r"mail\(\)|mailto:?", str(getSoupObject())) ):
+            print("16. Success")
             return -1
         else:
+            print("16. Success")
             return 1
     except:
         traceback.print_exc()
-        return -1
+        # return -1
+        print("16. Fail")
+        return 0
 
 # 17. Abnormal URL
 def isAbnormalURL(): #wrong
     try:
         if (requests.get(url)).text == whois.whois(getDomainName()):
+            print("17. Success")
             return 1
         else:
+            print("17. Success")
             return -1
     except:
-        return -1
+        print("17. Fail")
+        return 0
+        # return -1
 
 # 18. Website Forwarding
 def websiteForwarding():
     try:
         if len((requests.get(url)).history) <= 1:
+            print("18. Success")
             return 1
         elif len((requests.get(url)).history) <= 4:
+            print("18. Success")
             return 0
         else:
+            print("18. Success")
             return -1
     except:
-        return -1
+        print("18. Fail")
+        return 0
+        # return -1
 
 # 19. Status Bar Customization
 def statusBarCustomization():
     try:
         if re.findall("<script>.+onmouseover.+</script>", (requests.get(url)).text):
+            print("19. Success")
             return 1
         else:
+            print("19. Success")
             return -1
     except:
-        return -1
+        print("19. Fail")
+        return 0
+        # return -1
 
 # 20. Disabling Right Click
 def isRightClickDisabled(): #wrong
     try:
-        print(requests.get(url).text)
         if re.findall(
             r"event.button ?== ?2",
             (requests.get(url)).text
         ):
+            print("20. Success")
             return 1
         else:
+            print("20. Success")
             return -1
     except:
-        return -1
+        print("20. Fail")
+        return 0
+        # return -1
 
 # 21. Age of Domain
 def ageOfDomain() -> int:
@@ -415,20 +519,28 @@ def ageOfDomain() -> int:
     
         domainAgeInMonths = ((today.year - creationDate.year) *12) + (today.month - creationDate.month)
         if domainAgeInMonths >= 6:
+            print("21. Success")
             return 1
+        print("21. Success")
         return -1
     except:
-        return -1
+        print("21. Fail")
+        return 0
+        # return -1
 
 # 22. DNS Record
 def checkDNSRecord() -> int:
     try:
         whoisResponse = whois.whois(getDomainName())
         if (whoisResponse):
+            print("22. Success")
             return 1
+        print("22. Success")
         return -1
     except:
-        return -1
+        print("22. Fail")
+        return 0
+        # return -1
 
 # 23. Website Traffic
 def websiteTraffic() -> int:
@@ -438,11 +550,15 @@ def websiteTraffic() -> int:
                 features = "xml"
             ).find("REACH")['RANK']
         if (int(websiteRank) < 100000):
+            print("23. Success")
             return 1
+        print("23. Success")
         return 0
     except :
         traceback.print_exc()
-        return -1
+        print("23. Fail")
+        return 0
+        # return -1
 
 # 24. PageRank
 def pageRank() -> int:
@@ -450,11 +566,15 @@ def pageRank() -> int:
         checkerResponse = requests.post("https://www.checkpagerank.net/index.php", {"name": getDomainName()})
         globalRank = int(re.findall(r"Global Rank: ([0-9]+)", checkerResponse.text)[0])
         if ( 0 < globalRank < 100000 ):
+            print("24. Success")
             return 1
+        print("24. Success")
         return -1
     except:
         traceback.print_exc()
-        return -1
+        print("24. Fail")
+        return 0
+        # return -1
 
 # 25. Google Index
 def googleIndex() -> int:
@@ -465,28 +585,34 @@ def googleIndex() -> int:
         for gen in searchResults:    
             searchResultsList.append(gen)
         if searchResultsList:
+            print("25. Success")
             return 1
         else:
+            print("25. Success")
             return -1
     except:
         traceback.print_exc()
-        return -1
+        print("25. Fail")
+        return 0
+        # return -1
 
 # 26. Number of Links Pointing to Page
 def linksPointingToPage() -> int: # Wrong
     try:
-        print(re.findall(r"<a href=", requests.get(url).text))
         noOfLinks = len(re.findall(r"<a href=", requests.get(url).text))
         if noOfLinks == 0:
+            print("26. Success")
             return 1
         elif noOfLinks <= 2:
+            print("26. Success")
             return 0
         else:
+            print("26. Success")
             return -1
     except:
-        return -1
-
-# print(linksPointingToPage("https://github.com/"))
+        print("26. Fail")
+        return 0
+        # return -1
 
 # 27. Statistical-Reports Based Feature
 def statsReport() -> int:
@@ -506,11 +632,14 @@ def statsReport() -> int:
             ip_address
         )
         if isUrlMatched:
+            print("27. Success")
             return -1
         elif isIpMatched:
+            print("27. Success")
             return -1
+        print("27. Success")
         return 1
     except:
-        return 1
-
-# print(getFeatures("https://www.linkedin.com/"))
+        print("27. Fail")
+        return 0
+        # return 1
