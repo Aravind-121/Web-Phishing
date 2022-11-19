@@ -61,8 +61,12 @@
     </form>
 
         <div>
-            {% if message == "Legitimate site" %} <div class="negative message">{{ message }}</div> {% endif %}
-            {% if message == "Suspecious site" %} <div class="negative message">{{ message }}</div> {% endif %}
+            {% if message == "Legitimate site" %} <div class="positive message">
+            {% if url %}<p><strong>URL: </strong>{{url}}</p>{% endif %}
+            {{ message }}</div> {% endif %}
+            {% if message == "Suspecious site" %} <div class="negative message">
+            {% if url %}<p><strong>URL: </strong>{{url}}</p>{% endif %}
+            {{ message }}</div> {% endif %}
         </div>
     
 </body>
