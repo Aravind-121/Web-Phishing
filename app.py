@@ -28,21 +28,22 @@ def predict():
     model = getModel()
 
     # getting the features from the url
-    # features = FeatureExtractor.getFeatures(url)
+    features = FeatureExtractor.getFeatures(url)
 
-    # result = model.predict(features)
-    # result = result.tolist()
-    # print(type(result))
-    # print(result)
+    result = model.predict(features)
+    # probability = model.predict_proba(features)
+    result = result.tolist()
+    print(type(result))
+    print(result)
+    # print(probability)
 
-    # return "".join(model.predict(features))
-    result = [1]
+    # result = [1]
     message = ""
     if(result[0] == 1):
         message = "Legitimate site"
     else:
         message = "Suspecious site"
-    return render_template("product.html", message=message)
+    return render_template("product.html", message = message)
 
 def getModel():
     file = open("./model.pkl","rb")
