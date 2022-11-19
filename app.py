@@ -21,8 +21,8 @@ def product():
 def predict():
 
     # getting the URL from the website
-    # url = request.form["url"]
-    url = "https://www.linkedin.com/"
+    url = request.form["url"]
+    # url = "https://www.linkedin.com/"
 
     # loading the saved model
     model = getModel()
